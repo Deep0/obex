@@ -1,23 +1,44 @@
-name: C/C++ CI
-
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
-jobs:
-  build:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v4
-    - name: configure
-      run: ./configure
-    - name: make
-      run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
+name: Build Obex  
+  
+on:  
+  push:  
+    branches: [ main, master ]  
+  pull_request:  
+    branches: [ main, master ]  
+  workflow_dispatch:  
+  
+jobs:  
+  build:  
+    runs-on: windows-latest  
+      
+    steps:  
+    - name: Checkout code  
+      uses: actions/checkout@v4  
+      
+    - name: Setup MSVC Developer Command Prompt  
+      uses: ilammy/msvc-dev-cmd@v1  
+      with:  
+        arch: x64  
+      
+    - name: Compile obex.c  
+      run: |  
+        cl.exe /nologo /W3 /O2 obex.c /Fe:obex.exe /link /SUBSYSTEM:CONSOLE  
+      shell: cmd  
+      
+    - name: Verify build  
+      run: |  
+        if (Test-Path obex.exe) {  
+          Write-Host "Build successful: obex.exe created"  
+          Get-Item obex.exe | Select-Object Name, Length, LastWriteTime  
+        } else {  
+          Write-Error "Build failed: obex.exe not found"  
+          exit 1  
+        }  
+      shell: pwsh  
+      
+    - name: Upload artifact  
+      uses: actions/upload-artifact@v4  
+      with:  
+        name: obex-windows-x64  
+        path: obex.exe  
+        if-no-files-found: error
