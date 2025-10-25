@@ -1,0 +1,22 @@
+name: Build Obex  
+  
+on: [push, pull_request]  
+  
+jobs:  
+  build:  
+    runs-on: windows-latest  
+      
+    steps:  
+    - uses: actions/checkout@v3  
+      
+    - name: Setup MSVC  
+      uses: microsoft/setup-msbuild@v1  
+      
+    - name: Compile obex.c  
+      run: cl.exe obex.c /Fe:obex.exe /link user32.lib  
+      
+    - name: Upload artifact  
+      uses: actions/upload-artifact@v3  
+      with:  
+        name: obex-executable  
+        path: obex.exe
